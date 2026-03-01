@@ -1,3 +1,12 @@
+
+/* 
+In this Code we implement this project specifications 
+
+https://roadmap.sh/projects/weather-api-wrapper-service?fl=0
+
+*/
+
+
 import { Router } from "express";
 import 'dotenv/config'; // or require('dotenv').config();
 
@@ -7,6 +16,10 @@ import 'dotenv/config'; // or require('dotenv').config();
 //const router = Router();
 
 //const express = require('express')
+
+/*
+Just a basic express server we created here
+*/
 import express from 'express'
 import cors from 'cors';
 
@@ -17,6 +30,11 @@ const app = express();
 app.use(cors({
     origin: 'http://localhost:5173'
 }));
+
+
+/*
+Here we connect basically to the redis server by calling createClient and giving it certain keys to set up the connections
+*/
 
 import { createClient } from 'redis';
 
@@ -37,6 +55,20 @@ await client.connect();
 // const result = await client.get('foo');
 // console.log(result)  // >>> bar
 
+
+/*
+This is most important part we basically have a route specified on the root path and allow for a user specified parameter using colon :city
+so whenever we make a get request on this path say localhost:3000/city_name  or maybe curl 'localhost:3000/city_name' then this request is processed
+it includes a callback function which processes the request and returns a response. 
+
+we basically check if data i.e req.params.city is already pressent in the redis cache DB or not. If it is there we fetch it and return as response.
+If the data is not present in cache we make an API call to the weather API by sepcifying the city name as req.params.city and also the API key we obtained from 
+their website. Then we call async fetch which returns our needed data. 
+
+We then cache this data and specify an expiration timeline (EX flag in the set command) as well so our redis DB is not full that easily.
+
+We also have to add the rate limiter to prevent abuse of the weather API. 
+*/
 
 // GET REQUEST to endpoints
 app.get('/:city', async (req, res) => {
